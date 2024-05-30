@@ -45,6 +45,8 @@
 #include <Qt>
 
 #include "ZXingQt/ZXingQtReader.h"
+#include "ScreenshooterXdg.h"
+#include "ScreenshooterX11.h"
 
 using namespace ZXingQt;
 
@@ -98,6 +100,12 @@ public:
     leftLayout->addWidget(pasteButton);
     connect(pasteButton, &QPushButton::clicked, this,
             &ImageDisplayWidget::pasteImage);
+    
+    
+    QPushButton *screenshotButton = new QPushButton("Screenshot", this);
+    leftLayout->addWidget(screenshotButton);
+    connect(screenshotButton, &QPushButton::clicked, this,
+            &ImageDisplayWidget::makeScreenshot);
 
     QVBoxLayout *rightLayout = new QVBoxLayout;
     layout->addLayout(rightLayout);
@@ -118,6 +126,10 @@ public:
     rightLayout->addWidget(paramListWidget);
 
     setAcceptDrops(true);
+    
+    // Connect to the screenshotCaptured signal
+    QObject::connect(&screenshooterXdg, &ScreenshooterXdg::screenshotCaptured, this, &ImageDisplayWidget::capturedImage);
+    
   }
 
 protected:
@@ -158,6 +170,21 @@ private slots:
       displayImageFromFile(filePath);
       decodeBarcodes(QImageReader(filePath).read());
     }
+  }
+  
+  void makeScreenshot() {
+    if (QGuiApplication::platformName() == "xcb") {
+      QImage screenshot = ScreenshooterX11().captureScreenshot(this);
+      displayImageFromImage(screenshot);
+      decodeBarcodes(screenshot);
+    } else {
+      screenshooterXdg.takeScreenshot();
+    }
+  }
+  
+  void capturedImage(const QImage &screenshot) {
+    displayImageFromImage(screenshot);
+    decodeBarcodes(screenshot);
   }
 
   void pasteImage() {
@@ -371,6 +398,8 @@ private:
   QListWidget *paramListWidget;
   QTextEdit *resultTextEdit;
   QPixmap pixmap;
+  ScreenshooterXdg screenshooterXdg;
+
 };
 
 int main(int argc, char *argv[]) {

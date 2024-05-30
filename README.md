@@ -8,6 +8,8 @@ This project is a Qt-based application named `qotpdecode`. It is used for decodi
 
 * [Qt5 or Qt6](https://www.qt.io/download)
 * [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp)
+* *optional:* [scrot](https://github.com/resurrecting-open-source-projects/scrot) or [maim](https://github.com/naelstrof/maim) for screenshots with xorg
+* *optional:* xdg desktop portal for screenshots in wayland
 
 | Distribution | Command                                 |
 |--------------|-----------------------------------------|
@@ -37,6 +39,8 @@ This project is a Qt-based application named `qotpdecode`. It is used for decodi
 Run `qotpdecode`.  
 Images are accepted via Drag & Drop, Copy & Paste or opening with the file dialog.  
 It is also possible to directly paste an `otpauth://` url and decode it.
+
+Experimental Screenshot support is available.
 
 ## License
 
