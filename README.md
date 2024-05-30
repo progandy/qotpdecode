@@ -2,6 +2,8 @@
 
 This project is a Qt-based application named `qotpdecode`. It is used for decoding OTP (One-Time Password) images using the zxing library.
 
+![Screenshot](assets/screenshot.png)
+
 ## Build Instructions
 
 ### Dependencies
