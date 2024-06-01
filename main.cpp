@@ -48,6 +48,10 @@
 #include "ScreenshooterXdg.h"
 #include "ScreenshooterX11.h"
 
+#ifdef WITH_CAMERA
+#include "WebcamQRCodeWidget.h"
+#endif
+
 using namespace ZXingQt;
 
 class KeyValueItem : public QWidget {
@@ -90,6 +94,13 @@ public:
     imageLabel->setText("Drop image here");
     imageLabel->setAlignment(Qt::AlignCenter);
     leftLayout->addWidget(imageLabel);
+    
+#ifdef WITH_CAMERA
+    camera = new WebcamQRCodeWidget();
+    camera->setVisible(false);
+    leftLayout->addWidget(camera);
+    QObject::connect(camera, &WebcamQRCodeWidget::qrCodeDetected, this, &ImageDisplayWidget::qrCodeDetected);
+#endif
 
     QPushButton *openButton = new QPushButton("Open Image", this);
     leftLayout->addWidget(openButton);
@@ -107,8 +118,16 @@ public:
     connect(screenshotButton, &QPushButton::clicked, this,
             &ImageDisplayWidget::makeScreenshot);
 
+#ifdef WITH_CAMERA    
+    QPushButton *cameraButton = new QPushButton("Camera", this);
+    leftLayout->addWidget(cameraButton);
+    connect(cameraButton, &QPushButton::clicked, this,
+            &ImageDisplayWidget::startCamera);
+#endif
+    
     QVBoxLayout *rightLayout = new QVBoxLayout;
     layout->addLayout(rightLayout);
+    
 
     resultTextEdit = new QTextEdit(this);
     resultTextEdit->setReadOnly(true);
@@ -210,6 +229,22 @@ private slots:
       }
     }
   }
+  
+  void startCamera() {
+    imageLabel->setVisible(false);
+    if (camera) {
+      camera->setVisible(true);
+    }
+  }
+  
+  void qrCodeDetected(const QList<Result> &barcodes) {
+    if (barcodes.size() == 1 && isOtpAuthUrl(barcodes[0].text())) {
+      displayOtpAuthUrl(barcodes[0].text());
+    } else {
+      displayTextResult(barcodes);
+    }
+  }
+
 
 private:
   bool extractImageFromMimeData(const QMimeData *mimeData, QImage &image) {
@@ -258,6 +293,7 @@ private:
     this->pixmap = pixmap;
     imageLabel->setPixmap(pixmap.scaled(imageLabel->size(), Qt::KeepAspectRatio,
                                         Qt::SmoothTransformation));
+    chooseImage();
   }
 
   void displayImageFromDataUrl(const QString &dataUrl) {
@@ -269,9 +305,9 @@ private:
 
   void decodeBarcodes(const QImage &image) {
     auto options = ReaderOptions()
-                       .setFormats(BarcodeFormat::QRCode)
+                       .setFormats(ZXing::BarcodeFormat::QRCode)
                        .setTryInvert(true)
-                       .setTextMode(TextMode::HRI)
+                       .setTextMode(ZXing::TextMode::HRI)
                        .setMaxNumberOfSymbols(10);
     auto barcodes = ReadBarcodes(image, options);
     if (barcodes.size() == 1 && isOtpAuthUrl(barcodes[0].text())) {
@@ -279,11 +315,6 @@ private:
     } else {
       displayTextResult(barcodes);
     }
-    QString resultText;
-    for (auto &&result : barcodes) {
-      resultText += result.formatName() + ": " + result.text() + "\n";
-    }
-    resultTextEdit->setText(resultText.trimmed());
   }
 
   bool isOtpAuthUrl(const QString &text) {
@@ -392,8 +423,16 @@ private:
     resultTextEdit->setText(resultText.trimmed());
     resultTextEdit->setVisible(true);
   }
+    
+  void chooseImage() {
+    imageLabel->setVisible(true);
+    if (camera) {
+      camera->setVisible(false);
+    }
+  }
 
   QLabel *imageLabel;
+  WebcamQRCodeWidget *camera;
   QLineEdit *otpauthLineEdit;
   QListWidget *paramListWidget;
   QTextEdit *resultTextEdit;

@@ -8,7 +8,7 @@ INCLUDEPATH += .
 CONFIG+=link_pkgconfig
 PKGCONFIG=zxing
 
-QT+=widgets dbus core
+QT+=core widgets dbus
 
 # You can make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -19,4 +19,11 @@ QT+=widgets dbus core
 
 # Input
 SOURCES += main.cpp ScreenshooterXdg.cpp
-HEADERS += ScreenshooterXdg.h ScreenshooterX11.h
+HEADERS += ScreenshooterXdg.h ScreenshooterX11.h ZXingQt/ZXingQtReader.h
+
+CAMERA {
+    QT += qml multimedia multimediawidgets concurrent
+    SOURCES += WebcamQRCodeWidget.cpp
+    HEADERS += WebcamQRCodeWidget.h
+    DEFINES += WITH_CAMERA=1
+}
