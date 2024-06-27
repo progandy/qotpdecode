@@ -328,10 +328,10 @@ private:
     QString type = url.host();
     QString label = url.path().mid(1); // Remove leading '/'
 
+    resultTextEdit->setVisible(false);
     otpauthLineEdit->setText(otpauthUrl);
     otpauthLineEdit->setVisible(true);
     paramListWidget->setVisible(true);
-    resultTextEdit->setVisible(false);
 
     QMap<QString, QString> paramMap;
     QUrlQuery query(url.query());
@@ -425,10 +425,10 @@ private:
   }
     
   void chooseImage() {
-    imageLabel->setVisible(true);
     if (camera) {
       camera->setVisible(false);
     }
+    imageLabel->setVisible(true);
   }
 
   QLabel *imageLabel;
